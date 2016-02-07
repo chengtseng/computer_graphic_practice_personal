@@ -108,6 +108,13 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,GL_STATIC_DRAW);
 
+	/*link the shader with input*/
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat),(GLvoid*)0);
+	
+	/*enable vertex attribute array*/
+	glEnableVertexAttribArray(0);
+
+
 
 	/*Loop*/
 	while (!glfwWindowShouldClose(window)) 
