@@ -55,17 +55,27 @@ int main()
 
 
 	/*define texture*/
-	int width, height;
-	unsigned char* image = SOIL_load_image("C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-
-	/*Generate Texture*/
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
 	
-	SOIL_free_image_data(image);
+	GLuint texture1, texture2;
+	
+	/*Generate Texture 1*/
+	int width1, height1;
+	unsigned char* image1 = SOIL_load_image("C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/container.jpg", &width1, &height1, 0, SOIL_LOAD_RGB);
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width1, height1, 0, GL_RGB, GL_UNSIGNED_BYTE, image1);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	SOIL_free_image_data(image1);
+	glBindTexture(GL_TEXTURE_2D, 0);	
+	
+	/*Generate Texture 2*/
+	int width2, height2;
+	unsigned char* image2 = SOIL_load_image("C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/awesomeface.png", &width2, &height2, 0, SOIL_LOAD_RGB);
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width2, height2, 0, GL_RGB, GL_UNSIGNED_BYTE, image2);
+	glGenerateMipmap(GL_TEXTURE_2D);	
+	SOIL_free_image_data(image2);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
 
@@ -126,7 +136,16 @@ int main()
 		/*use program*/
 		shaderProgram.use();
 
-		glBindTexture(GL_TEXTURE_2D, texture);
+		//glBindTexture(GL_TEXTURE_2D, texture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glUniform1i(glGetUniformLocation(shaderProgram.program, "ourTexture"), 0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+		glUniform1i(glGetUniformLocation(shaderProgram.program, "ourTexture2"), 1);
+
+		
+		
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
