@@ -13,6 +13,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 int main()
 {
+	/*create window*/
+	int win_width=800;
+	int win_height=600;
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -28,6 +31,7 @@ int main()
 	}
 	glfwMakeContextCurrent(window);
 
+	/*initialize glew library*/
 	glewExperimental = GL_TRUE;
 	glewInit();
 	if (glewInit() != GLEW_OK)
@@ -35,27 +39,27 @@ int main()
 		std::cout << "Fail to initialize GLEW" << std::endl;
 		return -1;
 	}
-
-	glViewport(0, 0, 800, 600);
+	glViewport(0, 0,win_width,win_height);
 	glfwSetKeyCallback(window, key_callback);
 
 	/*define vertex for triangle*/
 	GLfloat vertices[] = {
-		// Positions          // Colors           // Texture Coords
+		// Positions          // Colors          // Texture Coords
 		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Top Right
 		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Bottom Right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Bottom Left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // Top Left 
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,  // Bottom Left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f   // Top Left 
 	};
 
-	GLuint indices[] = {  // Note that we start from 0!
+	/*drawing order*/
+	GLuint indices[] = 
+	{  
 		0, 1, 3,  // First Triangle
 		1, 2, 3   // Second Triangle
 	};
 
 
-	/*define texture*/
-	
+	/*define texture*/	
 	GLuint texture1, texture2;
 	
 	/*Generate Texture 1*/
@@ -77,15 +81,13 @@ int main()
 	glGenerateMipmap(GL_TEXTURE_2D);	
 	SOIL_free_image_data(image2);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	
 
-
-	/*define and test on transformation*/
-	glm::vec4 vec(1.0f,0.0f,0.0f,1.0f);
-	glm::mat4 trans;
-	trans = glm::translate(trans, glm::vec3(1.0f, 1.0f,0.0f));
-	vec = trans * vec;
-	std::cout << vec.x << vec.y << vec.z << std::endl;
+	/*unrelated to our code but define and test on transformation*/
+	//glm::vec4 vec(1.0f,0.0f,0.0f,1.0f);
+	//glm::mat4 trans;
+	//trans = glm::translate(trans, glm::vec3(1.0f, 1.0f,0.0f));
+	//vec = trans * vec;
+	//std::cout << vec.x << vec.y << vec.z << std::endl;
 
 	/*VAO*/
 	GLuint VAO;
@@ -115,47 +117,55 @@ int main()
 	/*enable vertex attribute array*/
 	glEnableVertexAttribArray(1);
 
-
+	/*link the shader with vertex coordinate*/
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	/*enable vertex attribute array*/
 	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
+	/*import and link our shader program*/
 	Shader shaderProgram = Shader("C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/vertex.ver" , "C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/fragment.frag");
 
 	/*Loop*/
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
-		//std::cout << glfwGetTime() << std::endl;
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-				
+		glClear(GL_COLOR_BUFFER_BIT);				
 		
 		/*use program*/
 		shaderProgram.use();
 
-		//glBindTexture(GL_TEXTURE_2D, texture);
+		/*Create transformation matrix every time during interation*/
+		glm::mat4 trans;		
+		trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+		trans = glm::rotate(trans, 10*(GLfloat)glfwGetTime()*glm::radians(90.0f), glm::vec3(0.0, 0.2, 0.0));
+		GLuint transformLoc = glGetUniformLocation(shaderProgram.program,"transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+		/*loading texture to the shader's uniform*/
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
 		glUniform1i(glGetUniformLocation(shaderProgram.program, "ourTexture"), 0);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
-		glUniform1i(glGetUniformLocation(shaderProgram.program, "ourTexture2"), 1);
-
+		glUniform1i(glGetUniformLocation(shaderProgram.program, "ourTexture2"), 1);		
 		
-		
+		/*bind vertex array*/
 		glBindVertexArray(VAO);
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glDrawElements(GL_TRIANGLES,6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
+		/*window swapping*/
 		glfwSwapBuffers(window);
 	}
+	
+	/*house keeping*/
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 	glfwTerminate();
 	return 0;
 }
