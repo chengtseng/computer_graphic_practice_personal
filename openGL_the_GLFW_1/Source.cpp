@@ -7,7 +7,6 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-
 /*function prototype*/
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
@@ -41,58 +40,57 @@ int main()
 	}
 	glViewport(0, 0,win_width,win_height);
 	glfwSetKeyCallback(window, key_callback);
+	glEnable(GL_DEPTH_TEST);
 
 	/*define vertex for triangle*/
 	GLfloat vertices[] = 
 	{
-		// Positions                   // Texture Coords
-		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f,		1.0f, 0.0f,
-		0.5f, 0.5f, -0.5f,		1.0f, 1.0f,
-		0.5f, 0.5f, -0.5f,		1.0f, 1.0f,
-		-0.5f, 0.5f, -0.5f,		0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,	
+		// Positions           // Texture Coords
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-		-0.5f, -0.5f, 0.5f,		0.0f, 0.0f,
-		0.5f, -0.5f, 0.5f,		1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f,		1.0f, 1.0f,
-		0.5f, 0.5f, 0.5f,		1.0f, 1.0f,
-		-0.5f, 0.5f, 0.5f,		0.0f, 1.0f,
-		-0.5f, -0.5f, 0.5f,		0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,
-		-0.5f, -0.5f, 0.5f,		1.0f, 0.0f,
-		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f,
-		-0.5f, 0.5f, 0.5f,		1.0f, 1.0f,
-		-0.5f, 0.5f, -0.5f,		0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		0.5f, -0.5f, -0.5f,		0.0f, 0.0f,
-		0.5f, -0.5f, 0.5f,		1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f,		1.0f, 1.0f,
-		0.5f, 0.5f, 0.5f,		1.0f, 1.0f,
-		0.5f, 0.5f, -0.5f,		0.0f, 1.0f,
-		0.5f, -0.5f, -0.5f,		0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,
-		0.5f, -0.5f, -0.5f,		1.0f, 0.0f,
-		0.5f, -0.5f, 0.5f,		1.0f, 1.0f,
-		0.5f, -0.5f, 0.5f,		1.0f, 1.0f,
-		-0.5f, -0.5f, 0.5f,		0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-		-0.5f, 0.5f, -0.5f,		0.0f, 0.0f,
-		0.5f, 0.5f, -0.5f,		1.0f, 0.0f,
-		0.5f, 0.5f, 0.5f,		1.0f, 1.0f,
-		0.5f, 0.5f, 0.5f,		1.0f, 1.0f,
-		-0.5f, 0.5f, 0.5f,		0.0f, 1.0f,
-		-0.5f, 0.5f, -0.5f,		0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-	/*define texture*/	
-	GLuint texture1, texture2;
-	
 	/*Generate Texture 1*/
+	GLuint texture1, texture2;
 	int width1, height1;
 	unsigned char* image1 = SOIL_load_image("C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/container.jpg", &width1, &height1, 0, SOIL_LOAD_RGB);
 	glGenTextures(1, &texture1);
@@ -131,25 +129,68 @@ int main()
 
 	glBindVertexArray(0);
 
+
+	//
+	glm::mat4 model;
+	model = glm::rotate(model,glm::radians(55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+	glm::mat4 view;
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f,- 3.0f));
+
+	glm::mat4 projection;
+	projection = glm::perspective(glm::radians(45.0f) ,(float)win_width /win_height, 0.1f, 100.0f);
+
+
+
+
+
 	/*import and link our shader program*/
 	Shader shaderProgram = Shader("C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/vertex.ver" , "C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/fragment.frag");
+
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
 
 	/*Loop*/
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);				
+		glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+
+		//
+		glm::mat4 model;
+		model = glm::rotate(model, (GLfloat)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+
+		glm::mat4 view;
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+		glm::mat4 projection;
+		projection = glm::perspective(glm::radians(45.0f), (float)win_width / win_height, 0.1f, 100.0f);
 		
 		/*use program*/
 		shaderProgram.use();
 
 		/*Create transformation matrix every time during interation*/
-		glm::mat4 trans;		
-		trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-		trans = glm::rotate(trans, (GLfloat)glfwGetTime()*glm::radians(90.0f), glm::vec3(0.0, 0.2, 0.0));
-		GLuint transformLoc = glGetUniformLocation(shaderProgram.program,"transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		
+		GLuint modelLoc = glGetUniformLocation(shaderProgram.program,"model");
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+		GLuint viewLoc = glGetUniformLocation(shaderProgram.program, "view");
+		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+		GLuint projectionLoc = glGetUniformLocation(shaderProgram.program, "projection");
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
 
 		/*loading texture to the shader's uniform*/
 		glActiveTexture(GL_TEXTURE0);
@@ -161,6 +202,19 @@ int main()
 		
 		/*bind vertex array*/
 		glBindVertexArray(VAO);
+		for (GLuint i = 0; i < 10; i++)
+		{
+			glm::mat4 model;
+			model = glm::translate(model, cubePositions[i]);
+			model = glm::rotate(model, (GLfloat)glfwGetTime() *glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+			GLfloat angle = 20.0f * i;
+			model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
+
 		glDrawArrays(GL_TRIANGLES,0,36);
 		glBindVertexArray(0);
 
