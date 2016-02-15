@@ -1,4 +1,6 @@
 ﻿  Source.cpp
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(178): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(179): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
   SOIL.lib(SOIL.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
 LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/LTCG' specification
 Shader.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/OPT:LBR' specification
