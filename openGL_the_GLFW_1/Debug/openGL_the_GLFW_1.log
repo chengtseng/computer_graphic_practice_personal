@@ -1,11 +1,31 @@
 ﻿  Source.cpp
-c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(178): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(179): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-  SOIL.lib(SOIL.obj) : MSIL .netmodule or module compiled with /GL found; restarting link with /LTCG; add /LTCG to the link command line to improve linker performance
-LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/LTCG' specification
-Shader.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/OPT:LBR' specification
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
-  Generating code
-  Finished generating code
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(21): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(22): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(118): warning C4018: '<': signed/unsigned mismatch
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(89): warning C4473: 'fscanf_s' : not enough arguments passed for format string
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(89): note: placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(89): note: the missing variadic argument 2 is required by format string '%c'
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(89): note: this argument is used as a buffer size
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(92): warning C4473: 'fscanf_s' : not enough arguments passed for format string
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(92): note: placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(92): note: the missing variadic argument 2 is required by format string '%c'
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(92): note: this argument is used as a buffer size
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(108): warning C4473: 'fscanf_s' : not enough arguments passed for format string
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(108): note: placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(108): note: the missing variadic argument 2 is required by format string '%c'
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(108): note: this argument is used as a buffer size
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(110): warning C4473: 'fscanf_s' : not enough arguments passed for format string
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(110): note: placeholders and their parameters expect 2 variadic arguments, but 1 were provided
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(110): note: the missing variadic argument 2 is required by format string '%c'
+  c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(110): note: this argument is used as a buffer size
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(156): warning C4018: '<': signed/unsigned mismatch
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(189): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(261): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(390): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(391): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(395): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(396): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(397): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\wei-cheng\documents\visual studio 2015\projects\opengl_the_glfw_1\opengl_the_glfw_1\source.cpp(398): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
   openGL_the_GLFW_1.vcxproj -> C:\Users\Wei-Cheng\Documents\Visual Studio 2015\Projects\openGL_the_GLFW_1\Debug\openGL_the_GLFW_1.exe
   openGL_the_GLFW_1.vcxproj -> C:\Users\Wei-Cheng\Documents\Visual Studio 2015\Projects\openGL_the_GLFW_1\Debug\openGL_the_GLFW_1.pdb (Partial PDB)
