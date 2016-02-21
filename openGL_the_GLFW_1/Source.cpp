@@ -19,6 +19,8 @@ int win_height = 600;
 GLfloat lastX = win_width / 2.0;
 GLfloat lastY = win_height / 2.0;
 bool firstMouse = true;
+int renderMode[3] = { 1,1,1 };//1-->1--fill 2--wire 3--dot,2--->1--Cull off 2--Cull, 3-->1--CCW 2--CW 
+bool reloadModel = false;
 
 /*define original camera variables*/
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -52,7 +54,7 @@ class Mesh
 	std::vector<Vertex> vertices;
 	std::vector<triangleData> triangles;
 	void Mesh::defineCenter();
-	void read_model(char *);	
+	void read_model(const char *);	
 	glm::vec3 center;
 	float wide;
 	int numberOfTriangle;
@@ -66,7 +68,53 @@ class Mesh
 /*function prototype*/
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void do_movement(Mesh &, glm::mat4&);
-void Mesh::read_model(char* file)
+void renderModeCheck();
+void cullSettingCheck();
+void frontFaceCcwCwCheck();
+void initializeBuffers();
+
+void renderModeCheck() 
+{
+	if (renderMode[0] == 1) 
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+	else if (renderMode[0] == 2)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	else if (renderMode[0] == 3)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		glPointSize(2.0);
+	}
+}
+void cullSettingCheck() 
+{
+	if (renderMode[1]==1) 
+	{
+		glDisable(GL_CULL_FACE);
+	}
+	else if(renderMode[1] == 2)
+	{
+		glEnable(GL_CULL_FACE);
+	}
+}
+void frontFaceCcwCwCheck() 
+{
+	if (renderMode[1] == 2 && renderMode[2] == 1)
+	{
+		glEnable(GL_CULL_FACE);
+		glFrontFace(GL_CCW);
+	}
+	else if (renderMode[1] == 2  && renderMode[2] ==2)
+	{
+		glEnable(GL_CULL_FACE);
+		glFrontFace(GL_CW);
+	}
+}
+
+void Mesh::read_model(const char* file)
 {
 	/*mesh requierd data*/
 	int color_index[3];
@@ -190,14 +238,19 @@ void Mesh::defineCenter()
 	cameraDistance = wide / 2 * 10;
 	std::cout <<"center of model: "<< this->center[0] << " " << this->center[1] << " " << this->center[2]<<std::endl;
 	std::cout << "wide of model: " << this->wide <<std::endl;
-	
 }
 
 /*main funciton*/
 int main()
 {	
+	std::cout << "Enter the name of the model: " << std::endl;
+	std::string modelName;
+	std::cin >> modelName;
+	std::string modelPath = "models/" + modelName;
+	
+	
 	Mesh mesh;
-	mesh.read_model("C:/Users/Wei-Cheng/Desktop/models/cube.in");
+	mesh.read_model(modelPath.c_str());
 	
 	/*create window*/
 	glfwInit();
@@ -227,9 +280,7 @@ int main()
 	glfwSetKeyCallback(window, key_callback);
 	
 	
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CW);
+	
 	
 	
 	glEnable(GL_DEPTH_TEST);
@@ -265,29 +316,26 @@ int main()
 	originalCameraPos = cameraPos;
 	/*import and link our shader program*/
 	Shader shaderProgram = Shader
-		("C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/vertex.ver", 
-		"C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/fragment.frag");
+		("vertex.ver", "fragment.frag");
+
 	
-	
-	
-	
-	
-	
-	
+		
 	/*Loop*/
 	while (!glfwWindowShouldClose(window))
-	{
-		
+	{		
 		glfwPollEvents();
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		
 		
+		renderModeCheck();
+		cullSettingCheck();
+		frontFaceCcwCwCheck();
+
 		/*use program*/
 		shaderProgram.use();
 		do_movement(mesh, view);
-		/*view matrix: will be uploaded every time*/
 		
-		
+		/*view matrix: will be uploaded every time*/		
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);//build lookAt matrix of current camera		
 		
 		/*Porjection Matrix*/
@@ -318,6 +366,12 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, mesh.numberOfTriangle*3);
 		glBindVertexArray(0);
 		
+		if (reloadModel) 
+		{
+			reloadModel = false;
+			break;
+		}
+
 		/*window swapping*/
 		glfwSwapBuffers(window);
 	}
@@ -386,10 +440,8 @@ void do_movement(Mesh& mesh,  glm::mat4& view)
 		cameraUp = glm::normalize(glm::rotate(cameraUp, 0.1f*glm::radians(1.0f), glm::cross(cameraUp, cameraFront)));	
 	}
 	if (keyDown[GLFW_KEY_Z])
-	{		
-		cameraUp = glm::rotate(cameraUp, 0.1f*glm::radians(-1.0f),  cameraFront);
-		std::cout <<"cameraFront: "<< cameraFront[0] << " " << cameraFront[1] << " " << cameraFront[2] << " " << std::endl;
-		std::cout << "cameraUp: " << cameraUp[0] << " " << cameraUp[1] << " " << cameraUp[2] << " " << std::endl;
+	{
+		cameraUp = glm::rotate(cameraUp, 0.1f*glm::radians(-1.0f), cameraFront);		
 	}
 	if (keyDown[GLFW_KEY_I])
 	{
@@ -427,14 +479,41 @@ void do_movement(Mesh& mesh,  glm::mat4& view)
 		if (keyDown[GLFW_KEY_B] && keyDown[GLFW_KEY_DOWN])
 		{
 			mesh.B -= 0.0001;
-		}
-		if (keyDown[GLFW_KEY_F])
-		{
+		}		
+	}
+	if (keyDown[GLFW_KEY_1])
+	{
+		renderMode[0] = 1;
+	}
+	if (keyDown[GLFW_KEY_2])
+	{
+		renderMode[0] = 2;
+	}
+	if (keyDown[GLFW_KEY_3])
+	{
+		renderMode[0] = 3;
+	}
+	if (keyDown[GLFW_KEY_V])
+	{
+		renderMode[1] = 1;
+	}
+	if (keyDown[GLFW_KEY_C])
+	{
+		renderMode[1] = 2;
+	}
+	if (keyDown[GLFW_KEY_LEFT])
+	{
+		renderMode[2] = 1;
+		
+	}
+	if (keyDown[GLFW_KEY_RIGHT])
+	{		
+		renderMode[2] = 2;
+	}
+	if (keyDown[GLFW_KEY_L])
+	{
 
-			glDisable(GL_CULL_FACE);
-			glDisable(GL_LIGHTING);
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		}
 	}
 }
+
 
