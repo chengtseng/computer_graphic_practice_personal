@@ -12,20 +12,17 @@
 #include <cstdlib>
 #include "glm/gtx/rotate_vector.hpp"
 
-
-
 /*global variables*/
 bool keyDown[1024];
 int win_width = 800;
 int win_height = 600;
 GLfloat lastX = win_width / 2.0;
 GLfloat lastY = win_height / 2.0;
-GLfloat yaw = -90.0f;
-GLfloat pitch = 0.0f;
 bool firstMouse = true;
 
 /*define original camera variables*/
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 originalCameraPos;
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f,-1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -36,7 +33,8 @@ struct Vector3D
 	float x, y, z;
 };
 
-struct Vertex {
+struct Vertex 
+{
 	glm::vec3 position;
 	glm::vec3 normal;
 	int colorIndex;
@@ -50,31 +48,32 @@ struct triangleData
 
 class Mesh
 {
-public:
+	public:
 	std::vector<Vertex> vertices;
 	std::vector<triangleData> triangles;
 	void Mesh::defineCenter();
 	void read_model(char *);	
 	glm::vec3 center;
-	float wide;	
-private:
+	float wide;
+	int numberOfTriangle;
+	GLfloat R = 1;
+	GLfloat G = 1;
+	GLfloat B = 1;
 	
+	private:	
 };
 
 /*function prototype*/
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void do_movement(Mesh &, glm::mat4&);
 void Mesh::read_model(char* file)
 {
-
-	
-
 	/*mesh requierd data*/
 	int color_index[3];
 	float shine[1];
 	char ch;
 	Vector3D ambient[3], diffuse[3], specular[3];
+	
 	
 
 	/*open file*/
@@ -93,15 +92,18 @@ void Mesh::read_model(char* file)
 	
 	int numberOfTrianlge;
 	fscanf_s(fp, "# triangles = %d\n", &numberOfTrianlge);
+	this->numberOfTriangle = numberOfTrianlge;
+	
 	int materialCount;
 	fscanf_s(fp, "Material count = %d\n", &materialCount);
 
+	float dummy;
 	for (int i = 0; i < materialCount; i++)
 	{
-		fscanf_s(fp, "ambient color %f %f %f\n", &(ambient[i].x), &(ambient[i].y), &(ambient[i].z));
-		fscanf_s(fp, "diffuse color %f %f %f\n", &(diffuse[i].x), &(diffuse[i].y), &(diffuse[i].z));
-		fscanf_s(fp, "specular color %f %f %f\n", &(specular[i].x), &(specular[i].y), &(specular[i].z));
-		fscanf_s(fp, "material shine %f\n", &(shine[i]));
+		fscanf_s(fp, "ambient color %f %f %f\n", &dummy, &dummy, &dummy);
+		fscanf_s(fp, "diffuse color %f %f %f\n", &dummy, &dummy, &dummy);
+		fscanf_s(fp, "specular color %f %f %f\n", &dummy, &dummy, &dummy);
+		fscanf_s(fp, "material shine %f\n", &dummy);
 	}
 
 	/*skip another line*/
@@ -132,8 +134,7 @@ void Mesh::read_model(char* file)
 			&(color_index[2]));
 		
 		fscanf_s(fp, "face normal %f %f %f\n", &(this->triangles[i/3].face_normal[0]), &(this->triangles[i/3].face_normal[1]),
-			&(this->triangles[i/3].face_normal[2]));
-		
+			&(this->triangles[i/3].face_normal[2]));		
 
 		this->triangles[i/3].color[0] = (unsigned char)(int)(255 * (diffuse[color_index[0]].x));
 		this->triangles[i/3].color[1] = (unsigned char)(int)(255 * (diffuse[color_index[0]].y));
@@ -194,18 +195,18 @@ void Mesh::defineCenter()
 
 /*main funciton*/
 int main()
-{
-	glFrontFace(GL_CCW);
+{	
 	Mesh mesh;
-	mesh.read_model("C:/Users/Wei-Cheng/Desktop/models/cow_up.in");
+	mesh.read_model("C:/Users/Wei-Cheng/Desktop/models/cube.in");
 	
 	/*create window*/
 	glfwInit();
+	
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(win_width, win_height, "LearnOpenGL", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -224,7 +225,13 @@ int main()
 	}
 	glViewport(0, 0, win_width, win_height);
 	glfwSetKeyCallback(window, key_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
+	
+	
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CW);
+	
+	
 	glEnable(GL_DEPTH_TEST);
 	
 	/*Array Buffer*/
@@ -235,7 +242,6 @@ int main()
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, mesh.vertices.size() * sizeof(Vertex), &(mesh.vertices[0]), GL_STATIC_DRAW);
-	//glBufferData(GL_ARRAY_BUFFER,sizeof(vertices), &(vertices[0]), GL_STATIC_DRAW);
 	
 	
 	/*assign position attribute in shader*/
@@ -250,46 +256,42 @@ int main()
 	glm::mat4 view;
 	glm::mat4 projection;
 	
-	/*translate the camera to the center of the model*/
-	glm::mat4 a;
+	/*translate the camera to the center of the model*/	
 	glm::mat4 translate;
-	translate *= glm::translate(a, glm::vec3(-1 * (mesh.center[0] - cameraPos[0]), -1 * (mesh.center[1] - cameraPos[1]), -1 * (mesh.center[2] - cameraPos[2])));//move camera to the center of obj
-	view = translate * view;			 //build the view matrix for this frame
-	cameraPos += mesh.center - cameraPos;//update camer pos	to the cneter of the model	
-	//glm::mat4 id;
-	//glm::mat4 translateToCorrectDistanceM = glm::translate(id, glm::vec3(0, 0, -1 * cameraDistance));//translate camera to correct distance to show the whole model
+	translate = glm::translate(translate, glm::vec3(-1 * (mesh.center[0] - cameraPos[0]), -1 * (mesh.center[1] - cameraPos[1]), -1 * (mesh.center[2] - cameraPos[2])));//move camera to the center of obj
+	view = translate * view;							//build the view matrix for this frame
+	cameraPos += mesh.center - cameraPos;				//update camer pos	to the cneter of the model	
 	cameraPos[2] += cameraDistance*0.4;
-	//view = translateToCorrectDistanceM* view;//build the view matrix for this frame
-	//std::cout<<"origin camer pose: " << cameraPos[0] << " " << cameraPos[1] << " " << cameraPos[2] << std::endl;
-										 
-										 /*import and link our shader program*/
-	Shader shaderProgram = Shader("C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/vertex.ver", "C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/fragment.frag");
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	originalCameraPos = cameraPos;
+	/*import and link our shader program*/
+	Shader shaderProgram = Shader
+		("C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/vertex.ver", 
+		"C:/Users/Wei-Cheng/Documents/Visual Studio 2015/Projects/openGL_the_GLFW_1/fragment.frag");
+	
+	
+	
+	
+	
+	
+	
 	/*Loop*/
 	while (!glfwWindowShouldClose(window))
 	{
 		
 		glfwPollEvents();
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//std::cout<<"origin camer Front: " << cameraFront[0] << " " << cameraFront[1] << " " << cameraFront[2] << std::endl;
-		glm::vec3 a = glm::cross(cameraFront, cameraUp);
-		//std::cout <<a[0]<<" " << a[1] <<" "<< a[2]<<std::endl;
-		/*keep detex*/
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		
 		
-
-		projection = glm::perspective(glm::radians(45.0f), (float)win_width / win_height, 0.1f, 12000.0f);
-
 		/*use program*/
 		shaderProgram.use();
+		do_movement(mesh, view);
 		/*view matrix: will be uploaded every time*/
 		
-		do_movement(mesh, view);
+		
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);//build lookAt matrix of current camera		
 		
-		
-		
-		
+		/*Porjection Matrix*/
+		projection = glm::perspective(glm::radians(45.0f), (float)win_width / win_height, 0.1f, 120000.0f);
 		
 		/*load matrix to shader*/
 		GLuint modelLoc = glGetUniformLocation(shaderProgram.program, "model");//find the uniform location in the shader program		
@@ -301,9 +303,19 @@ int main()
 		GLuint projectionLoc = glGetUniformLocation(shaderProgram.program, "projection");
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));//all the vertex in the world coordinate will be  perspective*view*model*world
 
+		GLuint rLoc = glGetUniformLocation(shaderProgram.program, "R");
+		glUniform1f(rLoc, mesh.R);
+
+		GLuint gLoc = glGetUniformLocation(shaderProgram.program, "G");
+		glUniform1f(gLoc, mesh.G);
+
+		GLuint bLoc = glGetUniformLocation(shaderProgram.program, "B");
+		glUniform1f(bLoc, mesh.B);
+
+		//glRenderMode(GL_LINE);
 		/*bind vertex array*/
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 25119);
+		glDrawArrays(GL_TRIANGLES, 0, mesh.numberOfTriangle*3);
 		glBindVertexArray(0);
 		
 		/*window swapping*/
@@ -316,6 +328,10 @@ int main()
 	glfwTerminate();
 	return 0;
 }
+
+//glm::vec3 a = glm::cross(cameraFront, cameraUp);
+//std::cout<<"origin camer Front: " << cameraFront[0] << " " << cameraFront[1] << " " << cameraFront[2] << std::endl;
+//std::cout <<a[0]<<" " << a[1] <<" "<< a[2]<<std::endl;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
@@ -339,13 +355,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 void do_movement(Mesh& mesh,  glm::mat4& view)
 {
-	GLfloat cameraSpeed = 0.1f;
+	GLfloat cameraSpeed = 0.01f;
 	
 	if (keyDown[GLFW_KEY_W])
 	{
-		cameraPos +=cameraSpeed*cameraFront;
-
-		
+		cameraPos +=cameraSpeed*cameraFront;		
 	}
 	if (keyDown[GLFW_KEY_S])
 	{
@@ -364,54 +378,63 @@ void do_movement(Mesh& mesh,  glm::mat4& view)
 	{
 		glm::mat4 a;
 		cameraFront = glm::normalize( glm::rotate(cameraFront, 0.1f*glm::radians(1.0f), cameraUp));
+		
 	}
 	if (keyDown[GLFW_KEY_X])
-	{
-		view = glm::lookAt(cameraPos, cameraPos+ cameraFront, worldUp);
-		//glm::mat4 a;
-		cameraFront = glm::normalize(glm::rotate(cameraFront, 0.01f*glm::radians(1.0f), glm::cross(cameraUp, cameraFront)));
-		//cameraUp = glm::rotate(cameraUp, 0.1f*glm::radians(-1.0f), glm::cross(worldUp, cameraFront));
+	{		
+		cameraFront = glm::normalize(glm::rotate(cameraFront, 0.1f*glm::radians(1.0f), glm::cross(cameraUp, cameraFront)));
+		cameraUp = glm::normalize(glm::rotate(cameraUp, 0.1f*glm::radians(1.0f), glm::cross(cameraUp, cameraFront)));	
 	}
 	if (keyDown[GLFW_KEY_Z])
-	{
-		view = glm::lookAt(cameraPos, cameraPos + cameraFront, worldUp);
+	{		
 		cameraUp = glm::rotate(cameraUp, 0.1f*glm::radians(-1.0f),  cameraFront);
 		std::cout <<"cameraFront: "<< cameraFront[0] << " " << cameraFront[1] << " " << cameraFront[2] << " " << std::endl;
 		std::cout << "cameraUp: " << cameraUp[0] << " " << cameraUp[1] << " " << cameraUp[2] << " " << std::endl;
 	}
-		
-}
-
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-	
-	if (firstMouse)
+	if (keyDown[GLFW_KEY_I])
 	{
-	lastX = xpos;
-	lastY = ypos;
-	firstMouse = false;
+		cameraUp = glm::vec3(0,1,0);
+		cameraFront= glm::vec3(0, 0, -1);
+		cameraPos = originalCameraPos;
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	}
+	if (keyDown[GLFW_KEY_R] || keyDown[GLFW_KEY_G] || keyDown[GLFW_KEY_B])
+	{
+		if (keyDown[GLFW_KEY_R] && keyDown[GLFW_KEY_UP])
+		{
+			mesh.R+=0.0001;
+		}
+		if (keyDown[GLFW_KEY_R] && keyDown[GLFW_KEY_DOWN])
+		{
+			mesh.R -= 0.0001;
+		}
+		if (keyDown[GLFW_KEY_G] && keyDown[GLFW_KEY_UP])
+		{
+			mesh.G+=0.0001;
+		}
+		if (keyDown[GLFW_KEY_G] && keyDown[GLFW_KEY_DOWN])
+		{
+			mesh.G -= 0.0001;
+		}
+		if(keyDown[GLFW_KEY_B] && keyDown[GLFW_KEY_UP])
+		{
+			mesh.B+=0.0001;
+		}
+		if (keyDown[GLFW_KEY_B] && keyDown[GLFW_KEY_DOWN])
+		{
+			mesh.B -= 0.0001;
+		}
+		if (keyDown[GLFW_KEY_B] && keyDown[GLFW_KEY_DOWN])
+		{
+			mesh.B -= 0.0001;
+		}
+		if (keyDown[GLFW_KEY_F])
+		{
 
-	GLfloat xoffset = xpos - lastX;
-	GLfloat yoffset = lastY - ypos;
-	lastX = xpos;
-	lastY = ypos;
-	GLfloat sensitivity = 2.0f;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	yaw += xoffset;
-	pitch += yoffset;
-
-	if (pitch > 89.0f)
-	pitch = 89.0f;
-	if (pitch < -89.0f)
-	pitch = -89.0f;
-
-	glm::vec3 front;
-	front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-	front.y = sin(glm::radians(pitch));
-	front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-	cameraFront = glm::normalize(front);
-	
+			glDisable(GL_CULL_FACE);
+			glDisable(GL_LIGHTING);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		}
+	}
 }
+
