@@ -21,14 +21,19 @@ GLfloat lastY = win_height / 2.0;
 bool firstMouse = true;
 int renderMode[3] = { 1,1,1 };//1-->1--fill 2--wire 3--dot,2--->1--Cull off 2--Cull, 3-->1--CCW 2--CW 
 bool reloadModel = false;
+float near;
+float far;
+
+
+
 
 /*define original camera variables*/
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 originalCameraPos;
+glm::vec3 originalCameraPos(0.0f, 0.0f, 0.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f,-1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
-int cameraDistance;
+int cameraDistance = 0;
 
 struct Vector3D
 {
@@ -71,7 +76,8 @@ void do_movement(Mesh &, glm::mat4&);
 void renderModeCheck();
 void cullSettingCheck();
 void frontFaceCcwCwCheck();
-void initializeBuffers();
+void initializeBuffers(Mesh &);
+
 
 void renderModeCheck() 
 {
@@ -230,162 +236,159 @@ void Mesh::defineCenter()
 			minZ = vertices[i].position[2];
 		}
 	}
-	std::cout << maxX << " "<<minX<<" " << maxY << " " << minY <<" "<< maxZ << " " << minZ <<std::endl;
 	this->center[0] = (minX + maxX )/ 2;
 	this->center[1] = (minY + maxY) / 2;
 	this->center[2] = (minZ + maxZ) / 2;
 	this->wide = maxX - minX;
-	cameraDistance = wide / 2 * 10;
-	std::cout <<"center of model: "<< this->center[0] << " " << this->center[1] << " " << this->center[2]<<std::endl;
+	cameraDistance = wide / 2 * 10;	
 	std::cout << "wide of model: " << this->wide <<std::endl;
 }
 
 /*main funciton*/
 int main()
 {	
-	std::cout << "Enter the name of the model: " << std::endl;
+
 	std::string modelName;
-	std::cin >> modelName;
-	std::string modelPath = "models/" + modelName;
-	
-	
-	Mesh mesh;
-	mesh.read_model(modelPath.c_str());
-	
-	/*create window*/
-	glfwInit();
-	
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-	GLFWwindow* window = glfwCreateWindow(win_width, win_height, "LearnOpenGL", nullptr, nullptr);
-	if (window == nullptr)
-	{
-		std::cout << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);	
-
-	/*initialize glew library*/
-	glewExperimental = GL_TRUE;
-	glewInit();
-	if (glewInit() != GLEW_OK)
-	{
-		std::cout << "Fail to initialize GLEW" << std::endl;
-		return -1;
-	}
-	glViewport(0, 0, win_width, win_height);
-	glfwSetKeyCallback(window, key_callback);
-	
-	
-	
-	
-	
-	glEnable(GL_DEPTH_TEST);
-	
-	/*Array Buffer*/
-	GLuint VBO, VAO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, mesh.vertices.size() * sizeof(Vertex), &(mesh.vertices[0]), GL_STATIC_DRAW);
-	
-	
-	/*assign position attribute in shader*/
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (6 * sizeof(GLfloat))+sizeof(int), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-
-	
-	glBindVertexArray(0);
-	
-	/*declare matrices*/
-	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 projection;
-	
-	/*translate the camera to the center of the model*/	
-	glm::mat4 translate;
-	translate = glm::translate(translate, glm::vec3(-1 * (mesh.center[0] - cameraPos[0]), -1 * (mesh.center[1] - cameraPos[1]), -1 * (mesh.center[2] - cameraPos[2])));//move camera to the center of obj
-	view = translate * view;							//build the view matrix for this frame
-	cameraPos += mesh.center - cameraPos;				//update camer pos	to the cneter of the model	
-	cameraPos[2] += cameraDistance*0.4;
-	originalCameraPos = cameraPos;
-	/*import and link our shader program*/
-	Shader shaderProgram = Shader
-		("vertex.ver", "fragment.frag");
-
-	
+	do {
+		std::cout << "Enter the name of the model, quit to close the application. Press esc to reload another model: " << std::endl;
 		
-	/*Loop*/
-	while (!glfwWindowShouldClose(window))
-	{		
-		glfwPollEvents();
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);		
+		std::cin >> modelName;
+		std::string modelPath = "models/" + modelName;
+
+		Mesh mesh;
+		mesh.read_model(modelPath.c_str());
 		
-		renderModeCheck();
-		cullSettingCheck();
-		frontFaceCcwCwCheck();
-
-		/*use program*/
-		shaderProgram.use();
-		do_movement(mesh, view);
+		cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
+		originalCameraPos=glm::vec3(0.0f, 0.0f, 0.0f);
+		cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+		cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+		worldUp = glm::vec3(0.0f, 1.0f, 0.0f);		
 		
-		/*view matrix: will be uploaded every time*/		
-		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);//build lookAt matrix of current camera		
-		
-		/*Porjection Matrix*/
-		projection = glm::perspective(glm::radians(45.0f), (float)win_width / win_height, 0.1f, 120000.0f);
-		
-		/*load matrix to shader*/
-		GLuint modelLoc = glGetUniformLocation(shaderProgram.program, "model");//find the uniform location in the shader program		
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	
-		GLuint viewLoc = glGetUniformLocation(shaderProgram.program, "view");
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
-
-		GLuint projectionLoc = glGetUniformLocation(shaderProgram.program, "projection");
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));//all the vertex in the world coordinate will be  perspective*view*model*world
-
-		GLuint rLoc = glGetUniformLocation(shaderProgram.program, "R");
-		glUniform1f(rLoc, mesh.R);
-
-		GLuint gLoc = glGetUniformLocation(shaderProgram.program, "G");
-		glUniform1f(gLoc, mesh.G);
-
-		GLuint bLoc = glGetUniformLocation(shaderProgram.program, "B");
-		glUniform1f(bLoc, mesh.B);
-
-		//glRenderMode(GL_LINE);
-		/*bind vertex array*/
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, mesh.numberOfTriangle*3);
-		glBindVertexArray(0);
-		
-		if (reloadModel) 
+		/*create window*/
+		glfwInit();
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+		GLFWwindow* window = glfwCreateWindow(win_width, win_height, "Assignment_1_Wei-Cheng_Tseng", nullptr, nullptr);
+		if (window == nullptr)
 		{
-			reloadModel = false;
-			break;
+			std::cout << "Failed to create GLFW window" << std::endl;
+			glfwTerminate();
+			return -1;
+		}
+		glfwMakeContextCurrent(window);
+
+		/*initialize glew library*/
+		glewExperimental = GL_TRUE;
+		glewInit();
+		if (glewInit() != GLEW_OK)
+		{
+			std::cout << "Fail to initialize GLEW" << std::endl;
+			return -1;
+		}
+		glViewport(0, 0, win_width, win_height);
+		glfwSetKeyCallback(window, key_callback);
+
+		glEnable(GL_DEPTH_TEST);
+
+		/*Array Buffer*/
+
+		GLuint VBO, VAO;
+		glGenVertexArrays(1, &VAO);
+		glGenBuffers(1, &VBO);
+
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, mesh.vertices.size() * sizeof(Vertex), &(mesh.vertices[0]), GL_STATIC_DRAW);
+
+
+		/*assign position attribute in shader*/
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, (6 * sizeof(GLfloat)) + sizeof(int), (GLvoid*)0);
+		glEnableVertexAttribArray(0);
+		glBindVertexArray(0);
+
+		/*declare matrices*/
+		glm::mat4 model;
+		glm::mat4 view;
+		glm::mat4 projection;
+		/*translate the camera to the center of the model*/
+		glm::mat4 translate;
+		translate = glm::translate(translate, glm::vec3(-1 * (mesh.center[0] - cameraPos[0]), -1 * (mesh.center[1] - cameraPos[1]), -1 * (mesh.center[2] - cameraPos[2])));//move camera to the center of obj
+		view = translate * view;//build the view matrix for this frame
+		cameraPos += mesh.center - cameraPos;//update camer pos	to the cneter of the model	
+		cameraPos[2] += cameraDistance*0.4;
+		near = 1;
+		far = 3000;
+		originalCameraPos = cameraPos;
+		/*import and link our shader program*/
+		Shader shaderProgram = Shader("vertex.ver", "fragment.frag");
+
+
+
+		/*Loop*/
+		while (!glfwWindowShouldClose(window))
+		{
+			glfwPollEvents();
+			glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			renderModeCheck();
+			cullSettingCheck();
+			frontFaceCcwCwCheck();
+
+			/*use program*/
+			shaderProgram.use();
+			do_movement(mesh, view);
+
+			/*view matrix: will be uploaded every time*/
+			view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);//build lookAt matrix of current camera		
+
+																			 /*Porjection Matrix*/
+			projection = glm::perspective(glm::radians(45.0f), (float)win_width / win_height, near, far);
+
+			/*load matrix to shader*/
+			GLuint modelLoc = glGetUniformLocation(shaderProgram.program, "model");//find the uniform location in the shader program		
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+			GLuint viewLoc = glGetUniformLocation(shaderProgram.program, "view");
+			glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+
+			GLuint projectionLoc = glGetUniformLocation(shaderProgram.program, "projection");
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));//all the vertex in the world coordinate will be  perspective*view*model*world
+
+			GLuint rLoc = glGetUniformLocation(shaderProgram.program, "R");
+			glUniform1f(rLoc, mesh.R);
+
+			GLuint gLoc = glGetUniformLocation(shaderProgram.program, "G");
+			glUniform1f(gLoc, mesh.G);
+
+			GLuint bLoc = glGetUniformLocation(shaderProgram.program, "B");
+			glUniform1f(bLoc, mesh.B);
+
+			/*bind vertex array*/
+			glBindVertexArray(VAO);
+			glDrawArrays(GL_TRIANGLES, 0, mesh.numberOfTriangle * 3);
+			glBindVertexArray(0);
+
+			if (reloadModel)
+			{
+				reloadModel = false;
+				break;
+			}
+
+			/*window swapping*/
+			glfwSwapBuffers(window);
 		}
 
-		/*window swapping*/
-		glfwSwapBuffers(window);
-	}
+		/*house keeping*/
+		glDeleteVertexArrays(1, &VAO);
+		glDeleteBuffers(1, &VBO);
+		glfwTerminate();
+	} while (modelName != "quit");
 
-	/*house keeping*/
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glfwTerminate();
 	return 0;
 }
-
-//glm::vec3 a = glm::cross(cameraFront, cameraUp);
-//std::cout<<"origin camer Front: " << cameraFront[0] << " " << cameraFront[1] << " " << cameraFront[2] << std::endl;
-//std::cout <<a[0]<<" " << a[1] <<" "<< a[2]<<std::endl;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
@@ -409,7 +412,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 void do_movement(Mesh& mesh,  glm::mat4& view)
 {
-	GLfloat cameraSpeed = 0.01f;
+	GLfloat cameraSpeed = 0.05f;
 	
 	if (keyDown[GLFW_KEY_W])
 	{
@@ -417,8 +420,7 @@ void do_movement(Mesh& mesh,  glm::mat4& view)
 	}
 	if (keyDown[GLFW_KEY_S])
 	{
-		cameraPos -= cameraSpeed*cameraFront;
-		std::cout << cameraPos[0] << " " << cameraPos[1] <<" " << cameraPos[2]<<std::endl;
+		cameraPos -= cameraSpeed*cameraFront;		
 	}
 	if (keyDown[GLFW_KEY_D])
 	{
@@ -428,20 +430,40 @@ void do_movement(Mesh& mesh,  glm::mat4& view)
 	{
 		cameraPos += normalize(glm::cross(cameraUp, cameraFront))*cameraSpeed;		
 	}
-	if (keyDown[GLFW_KEY_Y])
+	if (keyDown[GLFW_KEY_UP] && !(keyDown[GLFW_KEY_R] || keyDown[GLFW_KEY_G]||keyDown[GLFW_KEY_B]) )
+	{
+		cameraPos += cameraUp*cameraSpeed;
+	}
+	if (keyDown[GLFW_KEY_DOWN] && !(keyDown[GLFW_KEY_R] || keyDown[GLFW_KEY_G] || keyDown[GLFW_KEY_B]))
+	{
+		cameraPos -= cameraUp*cameraSpeed;
+	}
+	if (keyDown[GLFW_KEY_Y] && !keyDown[GLFW_KEY_LEFT_CONTROL])
 	{
 		glm::mat4 a;
-		cameraFront = glm::normalize( glm::rotate(cameraFront, 0.1f*glm::radians(1.0f), cameraUp));
-		
+		cameraFront = glm::normalize( glm::rotate(cameraFront, 0.1f*glm::radians(1.0f), cameraUp));		
 	}
-	if (keyDown[GLFW_KEY_X])
+	if (keyDown[GLFW_KEY_Y] && keyDown[GLFW_KEY_LEFT_CONTROL])
+	{
+		cameraFront = glm::normalize(glm::rotate(cameraFront, 0.1f*glm::radians(-1.0f), cameraUp));
+	}
+	if (keyDown[GLFW_KEY_X] && keyDown[GLFW_KEY_LEFT_CONTROL])
 	{		
 		cameraFront = glm::normalize(glm::rotate(cameraFront, 0.1f*glm::radians(1.0f), glm::cross(cameraUp, cameraFront)));
 		cameraUp = glm::normalize(glm::rotate(cameraUp, 0.1f*glm::radians(1.0f), glm::cross(cameraUp, cameraFront)));	
 	}
-	if (keyDown[GLFW_KEY_Z])
+	if (keyDown[GLFW_KEY_X] && !keyDown[GLFW_KEY_LEFT_CONTROL])
+	{
+		cameraFront = glm::normalize(glm::rotate(cameraFront, 0.1f*glm::radians(-1.0f), glm::cross(cameraUp, cameraFront)));
+		cameraUp = glm::normalize(glm::rotate(cameraUp, 0.1f*glm::radians(-1.0f), glm::cross(cameraUp, cameraFront)));
+	}
+	if (keyDown[GLFW_KEY_Z] && keyDown[GLFW_KEY_LEFT_CONTROL])
 	{
 		cameraUp = glm::rotate(cameraUp, 0.1f*glm::radians(-1.0f), cameraFront);		
+	}
+	if (keyDown[GLFW_KEY_Z] && !keyDown[GLFW_KEY_LEFT_CONTROL])
+	{
+		cameraUp = glm::rotate(cameraUp, 0.1f*glm::radians(1.0f), cameraFront);
 	}
 	if (keyDown[GLFW_KEY_I])
 	{
@@ -501,17 +523,51 @@ void do_movement(Mesh& mesh,  glm::mat4& view)
 	{
 		renderMode[1] = 2;
 	}
-	if (keyDown[GLFW_KEY_LEFT])
+	if (keyDown[GLFW_KEY_C] && keyDown[GLFW_KEY_LEFT])
 	{
 		renderMode[2] = 1;
 		
 	}
-	if (keyDown[GLFW_KEY_RIGHT])
+	if (keyDown[GLFW_KEY_C] && keyDown[GLFW_KEY_RIGHT])
 	{		
 		renderMode[2] = 2;
 	}
-	if (keyDown[GLFW_KEY_L])
+	if (keyDown[GLFW_KEY_F] && !keyDown[GLFW_KEY_LEFT_CONTROL])
 	{
+		far++;
+	}
+	if (keyDown[GLFW_KEY_F] && keyDown[GLFW_KEY_LEFT_CONTROL])
+	{
+		if (far <= near)
+		{
+			far = near;
+		}
+		else 
+		{
+			far--;
+		}		
+	}
+	if (keyDown[GLFW_KEY_N] && !keyDown[GLFW_KEY_LEFT_CONTROL])
+	{		
+		if (near >= far)
+		{
+			near = far;
+		}
+		else
+		{
+			near++;
+		}		
+	}
+	if (keyDown[GLFW_KEY_N] && keyDown[GLFW_KEY_LEFT_CONTROL])
+	{
+		if (near <= 0)
+		{
+			near = 0;
+		}
+		else 
+		{
+			near-=0.1;
+		}	
 
 	}
 }
