@@ -88,8 +88,6 @@ void Shader:: use()
 	glUseProgram(this->program);
 }
 
-
-
 Shader::~Shader()
 {
 }

@@ -1,45 +1,61 @@
 #pragma once
-#include <vector>
 #include <iostream>
 #include <string>
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "Shader.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include "SOIL.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include <fstream> 
+#include <iomanip>
+#include <cstdlib>/
+#include "glm/gtx/rotate_vector.hpp"
+#include "Camera.h"
 
-using namespace std;
-struct Vertex
+struct Vertex 
 {
-	glm::vec3 Position;
-	glm::vec3 Normal;
-	glm::vec2 TexCoords;
+	glm::vec3 position;
+	glm::vec3 normal;
+	int colorIndex;
 };
 
-
-struct Texture
+struct Vector3D
 {
-	GLuint id;
-	string type;
-	aiString path;
+	float x, y, z;
+};
+
+struct triangleData
+{
+	glm::vec3 face_normal;
+	glm::vec3 color;
 };
 
 class Mesh
 {
 	public:
-	vector <Vertex> vertices;
-	vector<GLuint> indices;
-	vector<Texture> textures;
-	Mesh(vector<Vertex> vertices, vector<GLuint> indices, vector<Texture> textures);
-	void Draw(Shader shader);	
-	~Mesh();
+		/*vertices and triangle*/
+		std::vector<Vertex> vertices;
+		std::vector<triangleData> triangles;		
+		/*general model information*/
+		glm::vec3 center;		
+		float wide;
+		int numberOfTriangle;
+		/*primry color setting of the model*/
+		GLfloat R = 1;
+		GLfloat G = 1;
+		GLfloat B = 1;
+
+		void Mesh::defineCenter();
+		void read_model(const char *);
+		void setupBuffers();
+		void draw();
+		glm::mat4 loadToCenterOfCamera(Camera cam);
+		Mesh();
+		~Mesh();
 
 	private:
-		GLuint VAO, VBO, EBO;
-		void setupMesh();
+		GLuint VBO, VAO;
 };
 
